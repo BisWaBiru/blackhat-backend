@@ -7,7 +7,12 @@ app.use(cors());
 app.use(express.json());
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENROUTER_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1",
+  defaultHeaders: {
+    "HTTP-Referer": "https://your-site.com",  // Optional, for rankings
+    "X-Title": "Black Hat Blog Generator"      // Optional, for rankings
+  }
 });
 
 app.post("/api/generate", async (req, res) => {
@@ -19,7 +24,7 @@ app.post("/api/generate", async (req, res) => {
     }
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4", // or "gpt-3.5-turbo"
+      model: "qwen/qwen-2.5-72b-instruct",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
     });
@@ -34,7 +39,7 @@ app.post("/api/generate", async (req, res) => {
       ],
     });
   } catch (error) {
-    console.error("OpenAI Error:", error.message);
+    console.error("❌ Error:", error.message);
     res.status(500).json({ error: "Failed to generate content." });
   }
 });
