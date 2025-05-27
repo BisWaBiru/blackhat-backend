@@ -1,19 +1,15 @@
-// server.js
 const express = require("express");
 const cors = require("cors");
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require("openai");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Load your API key securely from environment variable
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
-// POST endpoint for blog generation
 app.post("/api/generate", async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -22,7 +18,7 @@ app.post("/api/generate", async (req, res) => {
       return res.status(400).json({ error: "Prompt is required" });
     }
 
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: "gpt-4", // or "gpt-3.5-turbo"
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
@@ -32,13 +28,13 @@ app.post("/api/generate", async (req, res) => {
       choices: [
         {
           message: {
-            content: response.data.choices[0].message.content,
+            content: response.choices[0].message.content,
           },
         },
       ],
     });
   } catch (error) {
-    console.error("OpenAI Error:", error);
+    console.error("OpenAI Error:", error.message);
     res.status(500).json({ error: "Failed to generate content." });
   }
 });
